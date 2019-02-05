@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const schema = require('../schema/restaurantSchema');
 //getting books api
-router.get('/restaurants/trending', (req, res) => {
+router.get('/trending', (req, res) => {
     
 
     schema.count().exec(function (err, count) {
@@ -15,11 +15,20 @@ router.get('/restaurants/trending', (req, res) => {
 })
 
 //get restaurant by searching with their names or city or cuisins or locality
-router.get('/restaurants/search/', (req, res) => {
+router.get('/search/', (req, res) => {
     console.log(req.query.search)
     var re = new RegExp(/^[a-zA-Z0-9 ]*$/);
     const searchPattern=req.query.search;
-    if(re.test(searchPattern)){
+    if(searchPattern===''){
+        schema.count().exec(function (err, count) {
+            var random = Math.floor(Math.random() * count)
+            schema.find().skip(random).exec(function (err, result) {
+                result = result.slice(0, 10)
+                res.send(result)
+            })
+        })
+    }
+    else if(re.test(searchPattern)){
 
     
     const regex = new RegExp(req.query.search, 'gi');
@@ -39,13 +48,13 @@ router.get('/restaurants/search/', (req, res) => {
         })
     }
     else{
-        res.status(400).send("search should be a name or string")
+        res.send("422")
     }
 
 })
 
 //get restaurant with their id
-router.get('/restaurants/:id', (req, res) => {
+router.get('/:id', (req, res) => {
     const restaurantIdToBeSearch = req.params.id
     console.log(req.params.id)
     var re = new RegExp(/^(\d{1,8})$/);
